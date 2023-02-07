@@ -40,3 +40,6 @@ out/
 
 ### Logs ###
 /logs/
+
+### oauth ###
+**/application-oauth.yml

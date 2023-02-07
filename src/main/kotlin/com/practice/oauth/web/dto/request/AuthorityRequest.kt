@@ -1,7 +1,7 @@
 package com.practice.oauth.web.dto.request
 
-import com.practice.oauth.internal.Authorities
+import com.practice.oauth.domain.user.Role
 
 data class AuthorityRequest(
-    val authority: Authorities,
+    val authority: Role,
 )

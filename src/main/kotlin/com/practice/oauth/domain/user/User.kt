@@ -1,7 +1,6 @@
 package com.practice.oauth.domain.user
 
 import com.practice.oauth.domain.BaseEntity
-import com.practice.oauth.internal.Authorities
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EnumType
@@ -12,13 +11,13 @@ class User(
     @Column
     val name: String,
     @Column(unique = true)
-    val token: String,
-    @Column
+    val email: String,
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    var authorities: Authorities = Authorities.USER,
+    var authorities: Role = Role.USER,
 ) : BaseEntity() {
 
-    fun updateAuthority(authorities: Authorities) {
-        this.authorities = authorities
+    fun updateAuthority(role: Role) {
+        this.authorities = role
     }
 }

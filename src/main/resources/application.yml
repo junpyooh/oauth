@@ -3,5 +3,7 @@ spring:
     properties:
       hibernate:
         globally_quoted_identifiers: true
+  profiles:
+    include: oauth
 server:
   forward-headers-strategy: framework

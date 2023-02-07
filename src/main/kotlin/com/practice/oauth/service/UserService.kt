@@ -30,7 +30,7 @@ class UserService(
             UserResponse(
                 userId = this.id ?: throw NoSuchElementException(),
                 authority = this.authorities,
-                token = this.token
+                token = this.email
             )
         }
 }
