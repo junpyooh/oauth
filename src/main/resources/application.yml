@@ -1,0 +1,7 @@
+spring:
+  jpa:
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true
+server:
+  forward-headers-strategy: framework
