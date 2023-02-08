@@ -1,5 +1,6 @@
 package com.practice.oauth.auth.configurer
 
+import com.practice.oauth.config.properties.OAuth2Properties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -16,7 +17,9 @@ import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames
 import org.springframework.security.web.SecurityFilterChain
 
 @Configuration
-class OAuth2LoginConfig {
+class OAuth2LoginConfig(
+    private val oAuth2Properties: OAuth2Properties
+) {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
@@ -35,22 +38,22 @@ class OAuth2LoginConfig {
 
     @Bean
     fun authorizedClientService(
-        clientRegistrationRepository: ClientRegistrationRepository?
+        clientRegistrationRepository: ClientRegistrationRepository?,
     ): OAuth2AuthorizedClientService {
         return InMemoryOAuth2AuthorizedClientService(clientRegistrationRepository)
     }
 
     @Bean
     fun authorizedClientRepository(
-        authorizedClientService: OAuth2AuthorizedClientService?
+        authorizedClientService: OAuth2AuthorizedClientService?,
     ): OAuth2AuthorizedClientRepository {
         return AuthenticatedPrincipalOAuth2AuthorizedClientRepository(authorizedClientService)
     }
 
     private fun googleClientRegistration(): ClientRegistration {
         return ClientRegistration.withRegistrationId("google")
-            .clientId("778961895802-s5ts0gjesgikppcltvr8q2bu2mp6o12v.apps.googleusercontent.com")
-            .clientSecret("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")
+            .clientId(oAuth2Properties.clientId)
+            .clientSecret(oAuth2Properties.clientSecret)
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
             .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             .redirectUri("http://localhost:8080/login/oauth2/code/google")
