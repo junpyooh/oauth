@@ -42,4 +42,4 @@ out/
 /logs/
 
 ### oauth ###
-**/application-oauth.yml
+**/src/main/resources/application-oauth.yml
