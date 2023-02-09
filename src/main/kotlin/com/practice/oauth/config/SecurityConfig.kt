@@ -1,22 +1,17 @@
-package com.practice.oauth.auth.configurer
+package com.practice.oauth.config
 
+import com.practice.oauth.auth.PrincipalOAuthUserService
 import com.practice.oauth.config.properties.OAuth2Properties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.config.web.servlet.oauth2.login.TokenEndpointDsl
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService
 import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAuth2AuthorizedClientRepository
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver
-import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod
@@ -25,12 +20,10 @@ import org.springframework.security.web.SecurityFilterChain
 
 @Configuration
 @EnableWebSecurity
-class OAuth2LoginSecurityConfig(
+class SecurityConfig(
     private val oAuth2Properties: OAuth2Properties,
+    private val principalOAuthUserService: PrincipalOAuthUserService,
 ) {
-
-    @Bean
-    fun passwordEncoder() = BCryptPasswordEncoder()
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
@@ -43,44 +36,32 @@ class OAuth2LoginSecurityConfig(
                         )
                     )
                 )
-                    .loginPage("/login")
-                    .authorizationEndpoint()
-                    .baseUri("/login/auth")
-                    .authorizationRequestRepository(HttpSessionOAuth2AuthorizationRequestRepository())
-                    .authorizationRequestResolver(
-                        DefaultOAuth2AuthorizationRequestResolver(
-                            clientRegistrationRepository(),
-                            "/login/auth"
-                        )
-                    )
-                it.redirectionEndpoint().baseUri("/login/auth/callback/*")
-                it.tokenEndpoint().accessTokenResponseClient(TokenEndpointDsl().accessTokenResponseClient)
-                it.userInfoEndpoint()
-                    .userService(DefaultOAuth2UserService())
-                    .oidcUserService(OidcUserService())
-                // TODO .userAuthoritiesMapper()
+                it.redirectionEndpoint().baseUri(googleClientRegistration().redirectUri)
+                it.tokenEndpoint()
+                it.userInfoEndpoint { userInfoConfig ->
+                    userInfoConfig.userService(principalOAuthUserService)
+                }
             }
+
         return http.build()
     }
 
 
-    @Bean
-    fun clientRegistrationRepository(): ClientRegistrationRepository {
-        return InMemoryClientRegistrationRepository(googleClientRegistration())
-    }
-
-    @Bean
-    fun authorizedClientService(
+    private fun authorizedClientService(
         clientRegistrationRepository: ClientRegistrationRepository?,
     ): OAuth2AuthorizedClientService {
         return InMemoryOAuth2AuthorizedClientService(clientRegistrationRepository)
     }
 
-    @Bean
-    fun authorizedClientRepository(
+
+    private fun authorizedClientRepository(
         authorizedClientService: OAuth2AuthorizedClientService?,
     ): OAuth2AuthorizedClientRepository {
         return AuthenticatedPrincipalOAuth2AuthorizedClientRepository(authorizedClientService)
+    }
+
+    private fun clientRegistrationRepository(): ClientRegistrationRepository {
+        return InMemoryClientRegistrationRepository(googleClientRegistration())
     }
 
     private fun googleClientRegistration(): ClientRegistration {
