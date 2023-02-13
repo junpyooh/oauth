@@ -8,4 +8,6 @@ import org.springframework.boot.context.properties.ConstructorBinding
 data class OAuth2Properties(
     val clientId: String,
     val clientSecret: String,
+    val scope: List<String>,
+    val redirectUri: String,
 )
