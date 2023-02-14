@@ -9,4 +9,5 @@ data class AuthenticationResponse(
     val authorities: Collection<GrantedAuthority>,
     val details: Any,
     val principal: OAuth2User,
+    val isAuthenticated: Boolean,
 )

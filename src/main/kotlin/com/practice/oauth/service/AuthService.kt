@@ -15,7 +15,8 @@ class AuthService {
             authentication.name,
             authentication.authorities,
             authentication.details,
-            authentication.principal
+            authentication.principal,
+            authentication.isAuthenticated
         )
     }
 }
