@@ -8,6 +8,5 @@ data class AuthenticationResponse(
     val name: String,
     val authorities: Collection<GrantedAuthority>,
     val details: Any,
-    val credentials: Any,
     val principal: OAuth2User,
 )

@@ -89,20 +89,6 @@ class SecurityConfig(
             mappedAuthorities
         }
 
-//        GrantedAuthoritiesMapper { authorities: Collection<GrantedAuthority> ->
-//            val mappedAuthorities = mutableSetOf<GrantedAuthority>()
-//
-//            authorities.forEach { authority ->
-//                if (authority is OAuth2UserAuthority) {
-//                    val userAttributes = authority.attributes
-//                    userAttributes["SUPER"] = Role.SUPER
-//                    userAttributes["ADMIN"] = Role.ADMIN
-//                    userAttributes["USER"] = Role.USER
-//                }
-//            }
-//            mappedAuthorities
-//        }
-
     @Bean
     fun accessTokenResponseClient(): OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
         val accessTokenResponseClient = DefaultAuthorizationCodeTokenResponseClient()
