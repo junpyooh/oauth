@@ -1,4 +1,4 @@
-package com.practice.oauth.auth
+package com.practice.oauth.auth.user_info
 
 interface OAuth2UserInfo {
     fun getProviderId(): String

@@ -1,5 +1,6 @@
 package com.practice.oauth.auth
 
+import com.practice.oauth.auth.user_info.GoogleUserInfo
 import com.practice.oauth.domain.user.Role
 import com.practice.oauth.domain.user.User
 import com.practice.oauth.domain.user.UserRepository
@@ -21,6 +22,7 @@ class PrincipalOAuthUserService(
         val providerId = oAuth2UserInfo.getProviderId()
         val username = "${provider}_${providerId}"
         val email = oAuth2UserInfo.getEmail()
+
         val role = Role.USER
 
         var user = userRepository.findByUsername(username)
