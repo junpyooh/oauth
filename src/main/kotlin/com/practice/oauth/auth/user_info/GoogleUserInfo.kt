@@ -1,6 +1,8 @@
-package com.practice.oauth.auth
+package com.practice.oauth.auth.user_info
 
-class GoogleUserInfo(private val attributes: Map<String, Any>) : OAuth2UserInfo {
+class GoogleUserInfo(
+    private val attributes: Map<String, Any>,
+) : OAuth2UserInfo {
 
     override fun getProviderId() = attributes["sub"].toString()
 
