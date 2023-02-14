@@ -39,9 +39,9 @@ class SecurityConfig(
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .authorizeRequests().anyRequest().authenticated()
-            .antMatchers("/v1/super").hasRole("ROLE_SUPER")
-            .antMatchers("/v1/admin").hasRole("ROLE_ADMIN")
-            .antMatchers("/v1/").hasRole("ROLE_USER")
+            .antMatchers("/v1/super/**").hasRole("ROLE_SUPER")
+            .antMatchers("/v1/admin/**").hasRole("ROLE_ADMIN")
+            .antMatchers("/v1/access/**").hasRole("ROLE_USER")
             .and()
 
             .oauth2Login()
