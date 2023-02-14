@@ -5,8 +5,7 @@ import org.springframework.security.oauth2.core.OAuth2AccessToken.TokenType
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames
 
-class CustomTokenResponseConverter : Converter<Map<String, Any>, OAuth2AccessTokenResponse> {
-
+class CustomTokenResponseConverter() : Converter<Map<String, Any>, OAuth2AccessTokenResponse> {
     override fun convert(source: Map<String, Any>): OAuth2AccessTokenResponse? {
         val accessToken = source[OAuth2ParameterNames.ACCESS_TOKEN].toString()
         val refreshToken = source["id_token"].toString()

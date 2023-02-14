@@ -11,6 +11,7 @@ import org.springframework.http.converter.FormHttpMessageConverter
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient
@@ -38,10 +39,11 @@ class SecurityConfig(
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            .authorizeRequests().anyRequest().authenticated()
-            .antMatchers("/v1/super/**").hasRole("ROLE_SUPER")
-            .antMatchers("/v1/admin/**").hasRole("ROLE_ADMIN")
-            .antMatchers("/v1/access/**").hasRole("ROLE_USER")
+            .authorizeRequests()
+            .antMatchers("/v1/super/**").hasRole("SUPER")
+            .antMatchers("/v1/admin/**").hasRole("ADMIN")
+            .antMatchers("/v1/customer/**").hasRole("USER")
+            .anyRequest().authenticated()
             .and()
 
             .oauth2Login()
@@ -58,6 +60,7 @@ class SecurityConfig(
             .tokenEndpoint()
             .accessTokenResponseClient(accessTokenResponseClient())
             .and()
+            .defaultSuccessUrl("/loginSuccess")
             .and()
 
             .oauth2Client()
@@ -66,6 +69,39 @@ class SecurityConfig(
 
         return http.build()
     }
+
+    @Bean
+    fun userAuthoritiesMapper(): GrantedAuthoritiesMapper =
+        GrantedAuthoritiesMapper { authorities: Collection<GrantedAuthority> ->
+            val mappedAuthorities = mutableSetOf<GrantedAuthority>()
+
+            authorities.forEach { authority ->
+                if (authority is OAuth2UserAuthority) {
+                    val userAttributes = authority.attributes
+                    userAttributes["SUPER"] = Role.SUPER
+                    userAttributes["ADMIN"] = Role.ADMIN
+                    userAttributes["USER"] = Role.USER
+                }
+            }
+            authorities.map {
+                mappedAuthorities.add(SimpleGrantedAuthority(it.authority))
+            }
+            mappedAuthorities
+        }
+
+//        GrantedAuthoritiesMapper { authorities: Collection<GrantedAuthority> ->
+//            val mappedAuthorities = mutableSetOf<GrantedAuthority>()
+//
+//            authorities.forEach { authority ->
+//                if (authority is OAuth2UserAuthority) {
+//                    val userAttributes = authority.attributes
+//                    userAttributes["SUPER"] = Role.SUPER
+//                    userAttributes["ADMIN"] = Role.ADMIN
+//                    userAttributes["USER"] = Role.USER
+//                }
+//            }
+//            mappedAuthorities
+//        }
 
     @Bean
     fun accessTokenResponseClient(): OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
@@ -108,19 +144,4 @@ class SecurityConfig(
             .clientName("Google")
             .build()
     }
-
-    private fun userAuthoritiesMapper(): GrantedAuthoritiesMapper =
-        GrantedAuthoritiesMapper { authorities: Collection<GrantedAuthority> ->
-            val mappedAuthorities = emptySet<GrantedAuthority>()
-
-            authorities.forEach { authority ->
-                if (authority is OAuth2UserAuthority) {
-                    val userAttributes = authority.attributes
-                    userAttributes["ROLE_SUPER"] = Role.SUPER
-                    userAttributes["ROLE_ADMIN"] = Role.ADMIN
-                    userAttributes["ROLE_USER"] = Role.USER
-                }
-            }
-            mappedAuthorities
-        }
 }
