@@ -1,8 +1,6 @@
 package com.practice.oauth.auth
 
 import com.practice.oauth.auth.user_info.GoogleUserInfo
-import com.practice.oauth.domain.user.Role
-import com.practice.oauth.domain.user.User
 import com.practice.oauth.domain.user.UserRepository
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
@@ -17,27 +15,9 @@ class PrincipalOAuthUserService(
     override fun loadUser(userRequest: OAuth2UserRequest?): OAuth2User {
         val oAuth2User = super.loadUser(userRequest)
         val oAuth2UserInfo = GoogleUserInfo(oAuth2User.attributes)
-
-        val provider = oAuth2UserInfo.getProvider()
-        val providerId = oAuth2UserInfo.getProviderId()
-        val username = "${provider}_${providerId}"
-        val email = oAuth2UserInfo.getEmail()
-
-        val role = Role.USER
-
-        var user = userRepository.findByUsername(username)
-
-        if (user == null) {
-            user = User(
-                username = username,
-                email = email,
-                authorities = role,
-                provider = provider,
-                providerId = providerId
-            ).run {
-                userRepository.save(this)
-            }
-        }
+        val username = oAuth2UserInfo.toEntity().username
+        val user = userRepository.findByUsername(username)
+            ?: userRepository.save(oAuth2UserInfo.toEntity())
 
         return PrincipalDetails(user, oAuth2User.attributes)
     }
