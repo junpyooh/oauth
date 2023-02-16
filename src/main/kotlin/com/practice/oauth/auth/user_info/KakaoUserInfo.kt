@@ -3,21 +3,23 @@ package com.practice.oauth.auth.user_info
 import com.practice.oauth.domain.user.Role
 import com.practice.oauth.domain.user.User
 
-class GoogleUserInfo(
+class KakaoUserInfo(
     private val attributes: Map<String, Any>,
 ) : OAuth2UserInfo {
 
-    override fun getProviderId() = attributes["sub"].toString()
+    private val attributesAccount = attributes["kakao_account"] as Map<String, Any>
 
-    override fun getProvider() = GOOGLE
+    override fun getProviderId() = attributes["id"].toString()
 
-    override fun getEmail() = attributes["email"].toString()
+    override fun getProvider() = KAKAO
 
-    override fun getName() = attributes["name"].toString()
+    override fun getEmail() = attributesAccount["email"].toString()
+
+    override fun getName() = "${getProvider()}_${getProviderId()}"
 
     override fun toEntity() =
         User(
-            username = "${getProvider()}_${getProviderId()}",
+            username = getName(),
             email = getEmail(),
             authorities = Role.USER,
             provider = getProvider(),
@@ -25,6 +27,6 @@ class GoogleUserInfo(
         )
 
     companion object {
-        const val GOOGLE = "google"
+        const val KAKAO = "kakao"
     }
 }

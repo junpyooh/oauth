@@ -1,10 +1,11 @@
 package com.practice.oauth.config
 
+import com.practice.oauth.auth.CustomClientProvider
 import com.practice.oauth.auth.CustomRequestEntityConverter
 import com.practice.oauth.auth.CustomTokenResponseConverter
 import com.practice.oauth.auth.PrincipalOAuthUserService
-import com.practice.oauth.config.properties.OAuth2Properties
 import com.practice.oauth.domain.user.Role
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.converter.FormHttpMessageConverter
@@ -21,18 +22,15 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository
-import org.springframework.security.oauth2.core.AuthorizationGrantType
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod
 import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter
-import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.web.client.RestTemplate
 
+
 @EnableWebSecurity
 @Configuration
 class SecurityConfig(
-    private val oAuthProperties: OAuth2Properties,
     private val principalOAuthUserService: PrincipalOAuthUserService,
 ) {
 
@@ -110,24 +108,41 @@ class SecurityConfig(
     }
 
     @Bean
-    fun clientRegistrationRepository(): ClientRegistrationRepository {
-        return InMemoryClientRegistrationRepository(googleClientRegistration())
+    fun clientRegistrationRepository(
+        oAuth2ClientProperties: OAuth2ClientProperties,
+    ): ClientRegistrationRepository {
+        val registrations =
+            oAuth2ClientProperties.registration.keys
+                .stream()
+                .map { client ->
+                    getRegistration(oAuth2ClientProperties, client)
+                }.toList().toMutableList()
+
+        return InMemoryClientRegistrationRepository(registrations.toList())
     }
 
-    private fun googleClientRegistration(): ClientRegistration {
-        return ClientRegistration.withRegistrationId("google")
-            .clientId(oAuthProperties.clientId)
-            .clientSecret(oAuthProperties.clientSecret)
-            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-            .redirectUri(oAuthProperties.redirectUri)
-            .scope(oAuthProperties.scope)
-            .authorizationUri("https://accounts.google.com/o/oauth2/auth")
-            .tokenUri("https://oauth2.googleapis.com/token")
-            .userInfoUri("https://www.googleapis.com/oauth2/v3/userinfo")
-            .userNameAttributeName(IdTokenClaimNames.SUB)
-            .jwkSetUri("https://www.googleapis.com/oauth2/v1/certs")
-            .clientName("Google")
-            .build()
+    private fun getRegistration(
+        oAuth2ClientProperties: OAuth2ClientProperties,
+        registrationId: String,
+    ): ClientRegistration? {
+        if (registrationId == "google") {
+            val registration = oAuth2ClientProperties.registration["google"]
+            return CustomClientProvider.GOOGLE.getBuilder(registrationId)
+                .clientId(registration?.clientId)
+                .clientSecret(registration?.clientSecret)
+                .scope(registration?.scope)
+                .build()
+        }
+
+        if (registrationId == "kakao") {
+            val registration = oAuth2ClientProperties.registration["kakao"]
+            return CustomClientProvider.KAKAO.getBuilder(registrationId)
+                .clientId(registration?.clientId)
+                .clientSecret(registration?.clientSecret)
+                .scope(registration?.scope)
+                .build()
+        }
+
+        return null
     }
 }
